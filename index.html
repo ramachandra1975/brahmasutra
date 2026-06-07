@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brahmasūtra · Mātrikā · Neural Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cinzel:wght@400;500;600&family=Noto+Sans+Devanagari:wght@300;400;500;600&family=Source+Code+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --crimson:      #8B1A1A;
+  --crimson-deep: #5C0F0F;
+  --crimson-pale: #C4453A;
+  --gold:         #C9922A;
+  --gold-light:   #E8C068;
+  --gold-pale:    #F5E4B8;
+  --parchment:    #FAF3E0;
+  --parchment-dk: #F0E6C8;
+  --ink:          #1A1208;
+  --ink-mid:      #3D2E14;
+  --ink-soft:     #6B5637;
+  --teal:         #1B6B6B;
+  --teal-light:   #2E9A9A;
+  --purple:       #4A2060;
+  --purple-light: #7B4FA0;
+  --coral:        #B84030;
+  --sage:         #3A5A3A;
+  --border:       rgba(139,26,26,0.15);
+  --shadow:       rgba(26,18,8,0.12);
+  --font-head:    'Cinzel', serif;
+  --font-body:    'EB Garamond', serif;
+  --font-dev:     'Noto Sans Devanagari', sans-serif;
+  --font-mono:    'Source Code Pro', monospace;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* ── TEXTURE OVERLAY ─────────────────────────────── */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.6;
+}
+
+/* ── HERO ─────────────────────────────────────────── */
+.hero {
+  position:relative;
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  padding:4rem 2rem;
+  overflow:hidden;
+}
+
+.hero-mandala {
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:700px; height:700px;
+  opacity:0.06;
+  animation:rotateSlow 120s linear infinite;
+}
+
+@keyframes rotateSlow { to { transform:translate(-50%,-50%) rotate(360deg); } }
+
+.hero-border {
+  position:absolute; inset:1.5rem;
+  border:1px solid rgba(139,26,26,0.2);
+  pointer-events:none;
+}
+.hero-border::before {
+  content:'';
+  position:absolute; inset:6px;
+  border:1px solid rgba(201,146,42,0.15);
+}
+
+.om {
+  font-family:var(--font-dev);
+  font-size:clamp(3rem,8vw,5.5rem);
+  color:var(--crimson);
+  line-height:1;
+  margin-bottom:1.5rem;
+  opacity:0;
+  animation:fadeUp 1.2s ease forwards 0.3s;
+  text-shadow:0 2px 20px rgba(139,26,26,0.2);
+}
+
+.hero h1 {
+  font-family:var(--font-head);
+  font-size:clamp(1.4rem,4vw,2.8rem);
+  font-weight:500;
+  letter-spacing:0.12em;
+  color:var(--crimson-deep);
+  line-height:1.3;
+  margin-bottom:0.75rem;
+  opacity:0;
+  animation:fadeUp 1.2s ease forwards 0.6s;
+}
+
+.hero-devanagari {
+  font-family:var(--font-dev);
+  font-size:clamp(1.1rem,3vw,1.8rem);
+  color:var(--gold);
+  font-weight:400;
+  margin-bottom:1.5rem;
+  opacity:0;
+  animation:fadeUp 1.2s ease forwards 0.9s;
+}
+
+.hero-subtitle {
+  max-width:640px;
+  font-size:1.05rem;
+  color:var(--ink-soft);
+  font-style:italic;
+  line-height:1.8;
+  margin-bottom:2.5rem;
+  opacity:0;
+  animation:fadeUp 1.2s ease forwards 1.2s;
+}
+
+.hero-nav {
+  display:flex; flex-wrap:wrap; gap:0.75rem;
+  justify-content:center;
+  opacity:0;
+  animation:fadeUp 1.2s ease forwards 1.5s;
+}
+
+.hero-nav a {
+  font-family:var(--font-head);
+  font-size:0.72rem;
+  letter-spacing:0.15em;
+  color:var(--crimson);
+  border:1px solid var(--crimson);
+  padding:0.45rem 1.2rem;
+  text-decoration:none;
+  transition:all 0.3s;
+  text-transform:uppercase;
+}
+.hero-nav a:hover {
+  background:var(--crimson); color:var(--parchment);
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── GENERAL SECTIONS ─────────────────────────────── */
+.section {
+  position:relative;
+  max-width:900px;
+  margin:0 auto;
+  padding:5rem 2rem;
+}
+
+.section-divider {
+  text-align:center;
+  margin:0;
+  padding:2rem 0;
+  overflow:hidden;
+}
+.section-divider span {
+  position:relative;
+  display:inline-block;
+  font-family:var(--font-dev);
+  font-size:1.4rem;
+  color:var(--gold);
+  padding:0 1.5rem;
+}
+.section-divider span::before,
+.section-divider span::after {
+  content:'';
+  position:absolute;
+  top:50%; width:45vw; height:1px;
+  background:linear-gradient(to right, transparent, rgba(201,146,42,0.4));
+}
+.section-divider span::before { right:100%; transform:scaleX(-1); }
+.section-divider span::after  { left:100%; }
+
+.section-tag {
+  font-family:var(--font-head);
+  font-size:0.65rem;
+  letter-spacing:0.22em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:0.75rem;
+  display:block;
+}
+
+.section h2 {
+  font-family:var(--font-head);
+  font-size:clamp(1.4rem,3.5vw,2.2rem);
+  font-weight:500;
+  color:var(--crimson-deep);
+  letter-spacing:0.06em;
+  line-height:1.3;
+  margin-bottom:1.5rem;
+}
+
+.section h3 {
+  font-family:var(--font-head);
+  font-size:1.1rem;
+  font-weight:500;
+  color:var(--crimson);
+  letter-spacing:0.08em;
+  margin:2rem 0 0.75rem;
+}
+
+.section p {
+  color:var(--ink-mid);
+  margin-bottom:1.1rem;
+  font-size:1rem;
+  line-height:1.85;
+}
+
+/* ── SUTRA CARD ───────────────────────────────────── */
+.sutra-card {
+  background:linear-gradient(135deg, rgba(201,146,42,0.06), rgba(139,26,26,0.04));
+  border:1px solid rgba(201,146,42,0.3);
+  border-left:3px solid var(--gold);
+  padding:1.5rem 2rem;
+  margin:1.5rem 0;
+  position:relative;
+}
+.sutra-card::before {
+  content:'ॐ';
+  position:absolute; top:0.8rem; right:1.2rem;
+  font-family:var(--font-dev);
+  font-size:1.1rem;
+  color:rgba(201,146,42,0.3);
+}
+.sutra-ref {
+  font-family:var(--font-mono);
+  font-size:0.72rem;
+  color:var(--gold);
+  letter-spacing:0.1em;
+  margin-bottom:0.5rem;
+  display:block;
+}
+.sutra-text {
+  font-family:var(--font-dev);
+  font-size:1.5rem;
+  color:var(--crimson-deep);
+  line-height:1.5;
+  margin-bottom:0.5rem;
+}
+.sutra-gloss {
+  font-family:var(--font-body);
+  font-style:italic;
+  color:var(--ink-soft);
+  font-size:0.95rem;
+}
+
+/* ── BIJA GRID ────────────────────────────────────── */
+.bija-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:1rem;
+  margin:2rem 0;
+}
+
+.bija-card {
+  background:var(--parchment-dk);
+  border:1px solid var(--border);
+  padding:1.5rem 1rem;
+  text-align:center;
+  position:relative;
+  transition:transform 0.25s, box-shadow 0.25s;
+  cursor:default;
+}
+.bija-card:hover {
+  transform:translateY(-3px);
+  box-shadow:0 8px 30px var(--shadow);
+}
+.bija-card::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0;
+  height:2px;
+}
+.bija-card.c-crimson::after { background:var(--crimson); }
+.bija-card.c-gold::after    { background:var(--gold); }
+.bija-card.c-teal::after    { background:var(--teal); }
+.bija-card.c-purple::after  { background:var(--purple); }
+.bija-card.c-coral::after   { background:var(--coral); }
+
+.bija-akshara {
+  font-family:var(--font-dev);
+  font-size:2.8rem;
+  line-height:1.2;
+  margin-bottom:0.4rem;
+  color:var(--crimson-deep);
+}
+.bija-name {
+  font-family:var(--font-head);
+  font-size:0.7rem;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:0.3rem;
+}
+.bija-desc {
+  font-size:0.82rem;
+  color:var(--ink-soft);
+  line-height:1.5;
+}
+
+/* ── PANCHAVARGA TABLE ────────────────────────────── */
+.varga-table {
+  width:100%;
+  border-collapse:collapse;
+  margin:2rem 0;
+  font-size:0.92rem;
+}
+.varga-table th {
+  font-family:var(--font-head);
+  font-size:0.65rem;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:var(--gold);
+  border-bottom:1px solid var(--border);
+  padding:0.6rem 1rem;
+  text-align:left;
+}
+.varga-table td {
+  padding:0.8rem 1rem;
+  border-bottom:1px solid rgba(139,26,26,0.07);
+  color:var(--ink-mid);
+  vertical-align:top;
+}
+.varga-table tr:hover td { background:rgba(201,146,42,0.04); }
+.varga-dev { font-family:var(--font-dev); font-size:1.1rem; color:var(--crimson-deep); }
+
+/* ── TWO-COL LAYOUT ───────────────────────────────── */
+.two-col {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2rem;
+  margin:2rem 0;
+}
+@media(max-width:640px){ .two-col { grid-template-columns:1fr; } }
+
+/* ── MECHANISM BLOCK ──────────────────────────────── */
+.mechanism {
+  background:rgba(255,255,255,0.5);
+  border:1px solid var(--border);
+  padding:1.5rem;
+  position:relative;
+}
+.mechanism-type {
+  font-family:var(--font-head);
+  font-size:0.6rem;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  color:var(--parchment);
+  background:var(--crimson);
+  display:inline-block;
+  padding:0.25rem 0.75rem;
+  margin-bottom:1rem;
+}
+.mechanism h4 {
+  font-family:var(--font-head);
+  font-size:1rem;
+  color:var(--crimson-deep);
+  margin-bottom:0.6rem;
+}
+.mechanism .dev-example {
+  font-family:var(--font-dev);
+  font-size:1.3rem;
+  color:var(--crimson);
+  display:block;
+  margin-bottom:0.3rem;
+}
+.mechanism p { font-size:0.9rem; margin-bottom:0; }
+
+/* ── NEURAL ARCHITECTURE ──────────────────────────── */
+.neural-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1.2rem;
+  margin:2rem 0;
+}
+.neural-card {
+  border:1px solid var(--border);
+  padding:1.5rem;
+  position:relative;
+  background:rgba(255,255,255,0.4);
+  transition:all 0.3s;
+}
+.neural-card:hover {
+  background:rgba(255,255,255,0.75);
+  box-shadow:0 6px 24px var(--shadow);
+  transform:translateY(-2px);
+}
+.neural-region {
+  font-family:var(--font-head);
+  font-size:0.68rem;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  margin-bottom:0.5rem;
+}
+.neural-card h4 {
+  font-family:var(--font-head);
+  font-size:1rem;
+  color:var(--ink);
+  margin-bottom:0.5rem;
+  line-height:1.3;
+}
+.neural-card p { font-size:0.85rem; color:var(--ink-soft); margin-bottom:0; line-height:1.6; }
+.neural-card.nc-broca   .neural-region { color:var(--purple-light); }
+.neural-card.nc-angular .neural-region { color:var(--teal-light); }
+.neural-card.nc-vagus   .neural-region { color:var(--coral); }
+.neural-card.nc-acc     .neural-region { color:var(--sage); }
+
+/* ── SANDHI FLOW ──────────────────────────────────── */
+.sandhi-flow {
+  display:flex; align-items:center; flex-wrap:wrap; gap:0;
+  margin:1.5rem 0;
+  font-family:var(--font-dev);
+}
+.sandhi-morph {
+  background:rgba(139,26,26,0.07);
+  border:1px solid rgba(139,26,26,0.15);
+  padding:0.5rem 1rem;
+  font-size:1.2rem;
+  color:var(--crimson-deep);
+}
+.sandhi-arrow {
+  padding:0 0.6rem;
+  font-size:1rem;
+  color:var(--gold);
+  font-family:var(--font-body);
+}
+.sandhi-result {
+  background:rgba(201,146,42,0.12);
+  border:1px solid rgba(201,146,42,0.3);
+  padding:0.5rem 1rem;
+  font-size:1.2rem;
+  color:var(--crimson-deep);
+  font-weight:500;
+}
+.sandhi-label {
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  color:var(--ink-soft);
+  padding-left:0.8rem;
+  font-style:italic;
+}
+
+/* ── VAK LADDER ───────────────────────────────────── */
+.vak-ladder {
+  display:flex; flex-direction:column; gap:0;
+  margin:2rem 0;
+  position:relative;
+}
+.vak-ladder::before {
+  content:'';
+  position:absolute; left:2.5rem; top:0; bottom:0; width:1px;
+  background:linear-gradient(to bottom, var(--crimson) 0%, var(--gold) 50%, transparent 100%);
+}
+.vak-rung {
+  display:flex; align-items:flex-start; gap:1.5rem;
+  padding:1.2rem 0;
+  position:relative;
+  cursor:default;
+  transition:background 0.2s;
+}
+.vak-rung:hover { background:rgba(201,146,42,0.04); }
+.vak-dot {
+  width:2rem; height:2rem; border-radius:50%;
+  flex-shrink:0; margin-top:0.2rem;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-dev); font-size:0.8rem;
+  position:relative; z-index:1;
+}
+.vak-rung:nth-child(1) .vak-dot { background:var(--crimson-deep); color:var(--parchment); }
+.vak-rung:nth-child(2) .vak-dot { background:var(--purple); color:var(--parchment); }
+.vak-rung:nth-child(3) .vak-dot { background:var(--teal); color:var(--parchment); }
+.vak-rung:nth-child(4) .vak-dot { background:var(--gold); color:var(--ink); }
+.vak-content h4 {
+  font-family:var(--font-head);
+  font-size:0.95rem;
+  color:var(--crimson-deep);
+  margin-bottom:0.2rem;
+}
+.vak-content .vak-dev {
+  font-family:var(--font-dev);
+  font-size:1rem;
+  color:var(--gold);
+  margin-bottom:0.3rem;
+}
+.vak-content p { font-size:0.88rem; color:var(--ink-soft); margin-bottom:0; }
+
+/* ── TIMESCALE BLOCKS ─────────────────────────────── */
+.timescale-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0;
+  margin:2rem 0;
+  border:1px solid var(--border);
+}
+@media(max-width:640px){ .timescale-grid { grid-template-columns:1fr; } }
+.ts-block {
+  padding:1.5rem;
+  border-right:1px solid var(--border);
+}
+.ts-block:last-child { border-right:none; }
+.ts-label {
+  font-family:var(--font-mono);
+  font-size:0.65rem;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:0.5rem;
+  display:block;
+}
+.ts-block h4 {
+  font-family:var(--font-head);
+  font-size:0.95rem;
+  color:var(--crimson-deep);
+  margin-bottom:0.5rem;
+}
+.ts-block p { font-size:0.85rem; color:var(--ink-soft); line-height:1.6; margin-bottom:0; }
+
+/* ── QUOTE BLOCK ──────────────────────────────────── */
+.quote-block {
+  border-left:3px solid var(--gold);
+  padding:1.2rem 1.5rem 1.2rem 2rem;
+  margin:2rem 0;
+  background:rgba(201,146,42,0.05);
+}
+.quote-dev {
+  font-family:var(--font-dev);
+  font-size:1.4rem;
+  color:var(--crimson-deep);
+  line-height:1.6;
+  display:block;
+  margin-bottom:0.5rem;
+}
+.quote-roman {
+  font-style:italic;
+  color:var(--ink-soft);
+  font-size:0.92rem;
+  display:block;
+  margin-bottom:0.3rem;
+}
+.quote-source {
+  font-family:var(--font-mono);
+  font-size:0.72rem;
+  color:var(--gold);
+  letter-spacing:0.08em;
+}
+
+/* ── ANALYSIS ACCORDION ──────────────────────────── */
+.accordion { margin:1rem 0; }
+.acc-item { border:1px solid var(--border); margin-bottom:0.4rem; }
+.acc-header {
+  width:100%; text-align:left;
+  background:none; border:none; cursor:pointer;
+  padding:1rem 1.2rem;
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:var(--font-head);
+  font-size:0.85rem; letter-spacing:0.08em;
+  color:var(--crimson-deep);
+  transition:background 0.2s;
+}
+.acc-header:hover { background:rgba(139,26,26,0.04); }
+.acc-header .acc-dev {
+  font-family:var(--font-dev);
+  font-size:1.1rem;
+  color:var(--gold);
+  margin-right:0.75rem;
+}
+.acc-arrow {
+  font-size:0.75rem; color:var(--gold);
+  transition:transform 0.3s;
+  flex-shrink:0;
+}
+.acc-item.open .acc-arrow { transform:rotate(90deg); }
+.acc-body {
+  max-height:0; overflow:hidden;
+  transition:max-height 0.4s ease, padding 0.3s;
+  padding:0 1.2rem;
+  background:rgba(250,243,224,0.5);
+}
+.acc-item.open .acc-body {
+  max-height:600px;
+  padding:1rem 1.2rem 1.2rem;
+}
+.acc-body p { font-size:0.92rem; color:var(--ink-mid); margin-bottom:0.6rem; }
+.acc-body p:last-child { margin-bottom:0; }
+.acc-body .tag {
+  display:inline-block;
+  font-family:var(--font-mono);
+  font-size:0.65rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--parchment);
+  background:var(--crimson);
+  padding:0.15rem 0.5rem;
+  margin-bottom:0.5rem;
+  margin-right:0.3rem;
+}
+.acc-body .tag.gold { background:var(--gold); color:var(--ink); }
+.acc-body .tag.teal { background:var(--teal); }
+.acc-body .tag.purple { background:var(--purple); }
+
+/* ── FOOTER ──────────────────────────────────────── */
+footer {
+  text-align:center;
+  padding:3rem 2rem;
+  border-top:1px solid var(--border);
+  background:rgba(90,40,10,0.03);
+}
+footer .footer-om {
+  font-family:var(--font-dev);
+  font-size:2rem; color:var(--crimson);
+  display:block; margin-bottom:0.5rem;
+}
+footer p {
+  font-family:var(--font-mono);
+  font-size:0.72rem; letter-spacing:0.1em;
+  color:var(--ink-soft); text-transform:uppercase;
+}
+
+/* ── STICKY NAV ──────────────────────────────────── */
+.sticky-nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  background:rgba(250,243,224,0.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  padding:0.6rem 2rem;
+  display:flex; align-items:center; justify-content:space-between;
+  transform:translateY(-100%);
+  transition:transform 0.3s;
+}
+.sticky-nav.visible { transform:translateY(0); }
+.sticky-nav .brand {
+  font-family:var(--font-dev);
+  font-size:1.1rem; color:var(--crimson);
+}
+.sticky-nav ul {
+  display:flex; gap:1.5rem; list-style:none;
+}
+.sticky-nav a {
+  font-family:var(--font-head);
+  font-size:0.62rem; letter-spacing:0.15em;
+  text-transform:uppercase; color:var(--ink-soft);
+  text-decoration:none; transition:color 0.2s;
+}
+.sticky-nav a:hover { color:var(--crimson); }
+@media(max-width:580px){ .sticky-nav ul { display:none; } }
+
+/* ── SCROLL REVEAL ───────────────────────────────── */
+.reveal {
+  opacity:0; transform:translateY(24px);
+  transition:opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity:1; transform:translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- Sticky Nav -->
+<nav class="sticky-nav" id="stickyNav">
+  <span class="brand">ॐ ब्रह्मसूत्र</span>
+  <ul>
+    <li><a href="#matrika">Mātrikā</a></li>
+    <li><a href="#sandhi">Sandhi</a></li>
+    <li><a href="#samasa">Samāsa</a></li>
+    <li><a href="#neural">Neural</a></li>
+    <li><a href="#sutras">Sūtra Analysis</a></li>
+    <li><a href="#vak">Vāk Ascent</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-border"></div>
+
+  <!-- Mandala SVG background -->
+  <svg class="hero-mandala" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#8B1A1A">
+      <circle cx="200" cy="200" r="180" stroke-width="0.5"/>
+      <circle cx="200" cy="200" r="140" stroke-width="0.5"/>
+      <circle cx="200" cy="200" r="100" stroke-width="0.5"/>
+      <circle cx="200" cy="200" r="60" stroke-width="0.5"/>
+      <circle cx="200" cy="200" r="20" stroke-width="0.5"/>
+      <g transform="translate(200,200)">
+        <line x1="0" y1="-180" x2="0" y2="180" stroke-width="0.3"/>
+        <line x1="-180" y1="0" x2="180" y2="0" stroke-width="0.3"/>
+        <line x1="-127" y1="-127" x2="127" y2="127" stroke-width="0.3"/>
+        <line x1="127" y1="-127" x2="-127" y2="127" stroke-width="0.3"/>
+        <polygon points="0,-160 138,80 -138,80" stroke-width="0.5" stroke="#C9922A"/>
+        <polygon points="0,160 138,-80 -138,-80" stroke-width="0.5" stroke="#C9922A"/>
+      </g>
+      <g transform="translate(200,200)">
+        <circle cx="0" cy="-140" r="12" stroke-width="0.5" stroke="#8B1A1A"/>
+        <circle cx="121" cy="-70" r="12" stroke-width="0.5" stroke="#8B1A1A"/>
+        <circle cx="121" cy="70" r="12" stroke-width="0.5" stroke="#8B1A1A"/>
+        <circle cx="0" cy="140" r="12" stroke-width="0.5" stroke="#8B1A1A"/>
+        <circle cx="-121" cy="70" r="12" stroke-width="0.5" stroke="#8B1A1A"/>
+        <circle cx="-121" cy="-70" r="12" stroke-width="0.5" stroke="#8B1A1A"/>
+        <circle cx="0" cy="-140" r="6" fill="#C9922A" stroke="none"/>
+        <circle cx="121" cy="-70" r="6" fill="#C9922A" stroke="none"/>
+        <circle cx="121" cy="70" r="6" fill="#C9922A" stroke="none"/>
+        <circle cx="0" cy="140" r="6" fill="#C9922A" stroke="none"/>
+        <circle cx="-121" cy="70" r="6" fill="#C9922A" stroke="none"/>
+        <circle cx="-121" cy="-70" r="6" fill="#C9922A" stroke="none"/>
+      </g>
+    </g>
+  </svg>
+
+  <p class="om">ॐ</p>
+  <h1>Brahmasūtra · Mātrikā · Neural Architecture</h1>
+  <p class="hero-devanagari">॥ श्रीमद्बादरायणप्रणीतानि ब्रह्मसूत्राणि ॥</p>
+  <p class="hero-subtitle">
+    How Bādarāyaṇa's Brahmasūtras function simultaneously as phonemic initiation,
+    grammatical training apparatus, and neural-cognitive developmental protocol —
+    the Mātrikā substrate, Sandhi mechanics, and Samāsa architecture examined
+    through Śākta Tantra and contemporary neuroscience.
+  </p>
+  <nav class="hero-nav">
+    <a href="#matrika">I. Mātrikā Bījas</a>
+    <a href="#sandhi">II. Sandhi</a>
+    <a href="#samasa">III. Samāsa</a>
+    <a href="#neural">IV. Neural Pathways</a>
+    <a href="#sutras">V. Sūtra Analysis</a>
+    <a href="#vak">VI. Vāk Ascent</a>
+  </nav>
+</section>
+
+<div class="section-divider"><span>॥</span></div>
+
+<!-- ═══════════════════════════════════════════════
+     I. MĀTRIKĀ
+══════════════════════════════════════════════════ -->
+<section class="section reveal" id="matrika">
+  <span class="section-tag">Section I</span>
+  <h2>The Bījākṣara-Mātrikā Foundation</h2>
+
+  <p>Every sūtra in Bādarāyaṇa's text is not merely a philosophical proposition — it is a <em>phonemic maṇḍala</em>. The Mātrikā system, encompassing the 51 phonemes from <span style="font-family:var(--font-dev)">अ</span> to <span style="font-family:var(--font-dev)">क्ष</span>, constitutes in Śākta Tantra the very fabric of Vāk itself. When the text opens with <span style="font-family:var(--font-dev); color:var(--crimson)">अथातो ब्रह्मजिज्ञासा</span>, the initial akṣaras carry bīja-valence long before semantic content registers in the mind.</p>
+
+  <div class="bija-grid">
+    <div class="bija-card c-crimson">
+      <div class="bija-akshara">अ</div>
+      <div class="bija-name">Anuttara · Ādibīja</div>
+      <div class="bija-desc">Root of all phonation. Brahman-as-sound before differentiation. In the Māheśvara sūtras, अ opens the entire phonemic universe — the absolute plenitude from which all other akṣaras cascade.</div>
+    </div>
+    <div class="bija-card c-coral">
+      <div class="bija-akshara">ब्र</div>
+      <div class="bija-name">Agni + Ākāśa Bīja</div>
+      <div class="bija-desc">Labial ब् (pañcama varga → Ākāśa-tattva) conjunct with retroflex fire-bīja र्. Together they encode the fire-space that transforms avidyā — before ब्रह्म is semantically parsed.</div>
+    </div>
+    <div class="bija-card c-gold">
+      <div class="bija-akshara">ज</div>
+      <div class="bija-name">Jñānaśakti · Palatal</div>
+      <div class="bija-desc">Drawn from the palatal varga (चवर्ग), the bīja-zone of Jñānaśakti. The desiderative reduplication in जिज्ञासा creates a phonemic loop that neurologically enacts the very longing it denotes.</div>
+    </div>
+    <div class="bija-card c-teal">
+      <div class="bija-akshara">त</div>
+      <div class="bija-name">Pṛthvī-tattva · Dental</div>
+      <div class="bija-desc">Dental stop (dantavarga) corresponding to Pṛthvī-tattva. In तत्तु समन्वयात् (1.1.4), the reduplication त-त् rhythmically enacts the very "convergence" it philosophically states.</div>
+    </div>
+    <div class="bija-card c-purple">
+      <div class="bija-akshara">म</div>
+      <div class="bija-name">Bindu · Māyābīja</div>
+      <div class="bija-desc">Labial nasal with anunāsika resonance — the bindu-bīja that "seals" phonemes into completion. The nasal resonance stimulates the trigeminal nerve (CN V) through the nasal sinus cavity.</div>
+    </div>
+  </div>
+
+  <h3>Pañcavarga — Five Articulation Zones and Their Tattva Correspondences</h3>
+  <p>The five articulation positions of Sanskrit phonology are not anatomical conveniences — they are a deliberate mapping of the body's vibratory centers onto the five cosmic principles (pañcabhūta):</p>
+
+  <table class="varga-table">
+    <thead>
+      <tr>
+        <th>Varga</th>
+        <th>Akṣaras</th>
+        <th>Articulation</th>
+        <th>Bhūta / Tattva</th>
+        <th>Cranial Nerve Stimulated</th>
+        <th>Neural Region</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Kavarga</strong></td>
+        <td class="varga-dev">क ख ग घ ङ</td>
+        <td>Kaṇṭha (velar/guttural)</td>
+        <td>Ākāśa</td>
+        <td>CN X (Vagus) — laryngeal branch</td>
+        <td>Left temporal, Heschl's gyrus</td>
+      </tr>
+      <tr>
+        <td><strong>Cavarga</strong></td>
+        <td class="varga-dev">च छ ज झ ञ</td>
+        <td>Tālu (palatal)</td>
+        <td>Vāyu</td>
+        <td>CN V (Trigeminal) — palatine</td>
+        <td>Broca's area BA45</td>
+      </tr>
+      <tr>
+        <td><strong>Ṭavarga</strong></td>
+        <td class="varga-dev">ट ठ ड ढ ण</td>
+        <td>Mūrdhan (retroflex)</td>
+        <td>Agni / Tejas</td>
+        <td>CN XII (Hypoglossal)</td>
+        <td>Motor cortex tongue strip</td>
+      </tr>
+      <tr>
+        <td><strong>Tavarga</strong></td>
+        <td class="varga-dev">त थ द ध न</td>
+        <td>Danta (dental)</td>
+        <td>Āpas (Jala)</td>
+        <td>CN V3 (Mandibular)</td>
+        <td>Somatosensory cortex S1</td>
+      </tr>
+      <tr>
+        <td><strong>Pavarga</strong></td>
+        <td class="varga-dev">प फ ब भ म</td>
+        <td>Oṣṭha (labial)</td>
+        <td>Pṛthvī</td>
+        <td>CN VII (Facial)</td>
+        <td>Right hemisphere prosody areas</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="section-divider"><span>॥</span></div>
+
+<!-- ═══════════════════════════════════════════════
+     II. SANDHI
+══════════════════════════════════════════════════ -->
+<section class="section reveal" id="sandhi">
+  <span class="section-tag">Section II</span>
+  <h2>Sandhi as Neural Binding</h2>
+
+  <p>Sandhi (संधि — "joining") is the most neurologically significant feature of Sanskrit grammar. It is not mere phonological abbreviation — it performs a <em>binding operation</em> on concepts. By phonetically fusing words into a single phonological stream, Sandhi forces the brain to hold multiple concepts in working memory simultaneously before the final resolution arrives. This is syntactic suspense at the phonological level.</p>
+
+  <div class="sutra-card">
+    <span class="sutra-ref">Brahmasūtra 1.1.2</span>
+    <div class="sutra-text">जन्माद्यस्य यतः</div>
+    <div class="sutra-gloss">"That from which [arise] birth and so forth [of this universe]" — Brahman as cosmic origin-principle</div>
+  </div>
+
+  <h3>Sandhi Chain Analysis</h3>
+  <p>The sūtra <em>janmādyasya yataḥ</em> is a compressed Sandhi chain. Let us trace each junction:</p>
+
+  <div class="sandhi-flow">
+    <span class="sandhi-morph">जन्म</span>
+    <span class="sandhi-arrow">+</span>
+    <span class="sandhi-morph">आदि</span>
+    <span class="sandhi-arrow">→</span>
+    <span class="sandhi-result">जन्माद्य</span>
+    <span class="sandhi-label">Vowel Sandhi: अ + आ → आ (dīrgha)</span>
+  </div>
+  <div style="margin-top:0.6rem" class="sandhi-flow">
+    <span class="sandhi-morph">अस्य</span>
+    <span class="sandhi-arrow">+</span>
+    <span class="sandhi-morph">यतः</span>
+    <span class="sandhi-arrow">→</span>
+    <span class="sandhi-result">अस्य यतः</span>
+    <span class="sandhi-label">Visarga opens toward next sūtra — phonological "open door"</span>
+  </div>
+
+  <p style="margin-top:1.2rem">The Sandhi does not merely abbreviate — it creates <strong>phonological ligatures</strong>, the equivalent of cursive script at the sound level, where word-boundaries dissolve into a continuous stream. The brain cannot apply simple word-boundary segmentation; it must perform morphophonological analysis at every junction.</p>
+
+  <div class="two-col">
+    <div class="mechanism">
+      <span class="mechanism-type">Svara Sandhi</span>
+      <h4>Vowel Fusion</h4>
+      <span class="dev-example">तत् + एव → तदेव</span>
+      <p>Adjacent vowels merge into a single long or combined vowel. The brain must recognize the pre-Sandhi forms to parse semantic boundaries — a continuous morphological decomposition task training the left temporal lobe.</p>
+    </div>
+    <div class="mechanism">
+      <span class="mechanism-type">Visarga Sandhi</span>
+      <h4>Aspiration Transformation</h4>
+      <span class="dev-example">नेतरः → न + इतरः</span>
+      <p>Visarga transforms into r, s, or disappears depending on following phoneme. Multiple rule-chains must be held simultaneously — the most cognitively demanding Sandhi category, maximally exercising Broca's area BA44.</p>
+    </div>
+    <div class="mechanism">
+      <span class="mechanism-type">Vyañjana Sandhi</span>
+      <h4>Consonant Assimilation</h4>
+      <span class="dev-example">तत् + तु → तत्तु</span>
+      <p>Dental assimilation in 1.1.4 creates a rhythmic pulse that phonemically mirrors the "convergence" (samānvaya) of Vedic statements that the sūtra intellectually asserts.</p>
+    </div>
+    <div class="mechanism">
+      <span class="mechanism-type">Nasal Sandhi</span>
+      <h4>Anusvāra Threading</h4>
+      <span class="dev-example">सम् + अन्वय → समन्वय</span>
+      <p>The nasal threads through compounds (samanvaya = sam+anu+aya), stimulating the trigeminal system's nasal branches. The phonation of anusvāra creates measurable vagal modulation in real-time biofeedback studies.</p>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    <span class="quote-dev">अनुस्वारस्य ययि परसवर्णः</span>
+    <span class="quote-roman">The anusvāra is replaced by the nasal homorganic with the following consonant — Pāṇini Aṣṭādhyāyī 8.4.58</span>
+    <span class="quote-source">Demonstrating how phonological rules encode both acoustic precision and neurocognitive training protocols simultaneously</span>
+  </div>
+
+  <h3>The Neural Mechanism: Sustained Syntactic Working Memory</h3>
+  <p>Research in psycholinguistics (Friederici 2017; Hagoort's MUC model) demonstrates that syntactic integration — the brain's act of building structure across words — activates Broca's area (BA44/45) and the left anterior temporal lobe in a graded fashion. Languages that front-load ambiguity and resolve late, as Sanskrit's Sandhi-rich syntax does, require <em>sustained syntactic working memory</em> across longer processing windows, exercising the fronto-temporal networks more deeply than analytic languages.</p>
+
+  <p>Critically, the anterior cingulate cortex (ACC) — the neural substrate of sustained selective attention — is continuously engaged during Sandhi-parsing. This is the same circuit engaged in dhāraṇā practice as defined in the Yogasūtra. Sanskrit recitation and dhyāna share neural substrates. This is not metaphor.</p>
+</section>
+
+<div class="section-divider"><span>॥</span></div>
+
+<!-- ═══════════════════════════════════════════════
+     III. SAMĀSA
+══════════════════════════════════════════════════ -->
+<section class="section reveal" id="samasa">
+  <span class="section-tag">Section III</span>
+  <h2>Samāsa as Conceptual Compression</h2>
+
+  <p>Samāsa (समास — "putting together") is Sanskrit's compound formation system. The Brahmasūtras are extraordinarily rich in Samāsa structures, and each type maps to a distinct cognitive operation with a demonstrable neural correlate.</p>
+
+  <div class="sutra-card">
+    <span class="sutra-ref">Brahmasūtra 1.1.3 — Tatpuruṣa Samāsa</span>
+    <div class="sutra-text">शास्त्रयोनित्वात्</div>
+    <div class="sutra-gloss">śāstra + yoni + tva + āt: "Because of [Brahman's nature as] the womb/source of scripture"</div>
+  </div>
+
+  <p>Four levels of meaning are compressed into a single phonological word. The brain must simultaneously hold: (a) śāstra as dependent noun, (b) yoni as relational noun, (c) -tva as abstract property suffix, (d) -āt as ablative case marking logical cause. This is <em>four-level hierarchical parsing</em> within a single prosodic unit — what cognitive linguists call a "conceptual integration" or "blending" operation.</p>
+
+  <h3>The Four Primary Samāsa Types and Their Cognitive Operations</h3>
+
+  <div class="accordion">
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">तत्पुरुष</span> Tatpuruṣa · Dependent Determinative Compound</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag">Modifier + Head</span>
+        <span class="tag gold">Angular gyrus</span>
+        <span class="tag teal">Hierarchical parsing</span>
+        <p>The head noun is semantically qualified by the preceding member. Example from Brahmasūtra 1.1.3: <span style="font-family:var(--font-dev)">शास्त्रयोनित्वात्</span>. The reader must hold the dependent element in working memory while awaiting the head, then retroactively restructure the semantic relationship. This trains the left inferior frontal gyrus (compositional semantics).</p>
+        <p>Another instance: <span style="font-family:var(--font-dev)">आनन्दमयोऽभ्यासात्</span> (1.1.12) — the compound itself is a philosophical argument compressed into a noun. The brain must unpack the compound, identify the referent, and verify against the abhyāsa (Vedic repetition) cited as evidence, all before parsing the ablative case.</p>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">बहुव्रीहि</span> Bahuvrīhi · Exocentric Compound</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag">That which has X as its property</span>
+        <span class="tag purple">Inference beyond literal</span>
+        <span class="tag gold">Angular gyrus</span>
+        <p>The most cognitively sophisticated Samāsa type. The referent lies <em>outside</em> the compound's literal constituents. <span style="font-family:var(--font-dev)">आनन्दमय</span> does not mean "bliss-thing" (Karmadhāraya) but "that entity which has bliss as its constitutive substance." The brain must infer an external referent from a compound that points beyond itself — the exact cognitive faculty underlying metaphor, mathematical abstraction, and strategic reasoning.</p>
+        <p>This exocentric inference pattern is mediated by the angular gyrus (BA39/40), which is simultaneously the hub of: semantic integration across modalities, mathematical processing, musical structure recognition, and reading. Regular Bahuvrīhi parsing is a systematic angular gyrus workout.</p>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">द्वन्द्व</span> Dvandva · Coordinate Compound</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag gold">Symmetric attention</span>
+        <span class="tag">Co-equal elements</span>
+        <p>X and Y held simultaneously without hierarchization. When Bādarāyaṇa discusses paired entities — such as in 1.1.31's reference to jīva-mukhyaprāṇa — the Dvandva structure requires the brain to maintain both concepts in symmetric cognitive attention. This is a distinct neural mode from the asymmetric subject-predicate processing that dominates Western linguistic training.</p>
+        <p>The ability to hold two non-hierarchized concepts in simultaneous, equal attention is the same faculty required for dialectical reasoning, comparative philosophy, and musical counterpoint. Dvandva is therefore a training protocol for non-hierarchical cognition — the advaita mode enacted in grammar itself.</p>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">अव्ययीभाव</span> Avyayībhāva · Indeclinable Compound</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag teal">Temporal/spatial relation</span>
+        <span class="tag">Adverbial mode</span>
+        <p>Indeclinable compounds encoding relational nuance that cannot be captured by simple case-endings. Their grammatical "freezing" — they accept no further inflection — encodes a conceptual stability that mirrors the philosophical concept of avikāra (immutability) in Brahman.</p>
+        <p>The neural requirement for Avyayībhāva is the recognition of a compound's relational role in the sentence despite its invariant morphological form — dissociating syntactic function from morphological case-marking, a high-order grammatical inference task that engages the left perisylvian networks distinctively.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="quote-block">
+    <span class="quote-dev">सुप्तिङन्तं पदम्</span>
+    <span class="quote-roman">A word is that which ends in a nominal suffix (sup) or a verbal suffix (tiṅ) — Pāṇini, Aṣṭādhyāyī 1.4.14</span>
+    <span class="quote-source">The grammatical atom from which all Samāsa structures are built — themselves the molecules of Sanskrit cognition</span>
+  </div>
+</section>
+
+<div class="section-divider"><span>॥</span></div>
+
+<!-- ═══════════════════════════════════════════════
+     IV. NEURAL ARCHITECTURE
+══════════════════════════════════════════════════ -->
+<section class="section reveal" id="neural">
+  <span class="section-tag">Section IV</span>
+  <h2>Neural Pathways of Sanskrit Cognition</h2>
+
+  <p>The convergence of Mātrikā phonology, Sandhi mechanics, and Samāsa structure produces a <em>tri-system neural activation</em> rarely achieved by any other single cognitive activity. Each layer targets distinct neural networks:</p>
+
+  <div class="neural-grid">
+    <div class="neural-card nc-broca">
+      <div class="neural-region">Broca's Area · BA44/45</div>
+      <h4>Syntactic Integration</h4>
+      <p>Sandhi-parsing activates the left inferior frontal gyrus continuously. Sanskrit's late-resolution syntax (case-marked, verb-final) sustains this activation longer per sentence than any major Western language, training syntactic working memory architecture.</p>
+    </div>
+    <div class="neural-card nc-angular">
+      <div class="neural-region">Angular Gyrus · BA39</div>
+      <h4>Cross-Modal Semantic Hub</h4>
+      <p>Samāsa exocentric parsing is the key activator. This same gyrus mediates mathematical reasoning, musical syntax, reading, and metaphor — explaining why classical Sanskrit scholars routinely excelled across all these domains.</p>
+    </div>
+    <div class="neural-card nc-vagus">
+      <div class="neural-region">Vagus Nerve · CN X</div>
+      <h4>Parasympathetic Entrainment</h4>
+      <p>Nasals (ङ ञ ण न म) and semivowels (य र ल व) — privileged as bīja-terminals in Mātrikā — have demonstrably higher vagal stimulation potential. The Suṣumnā-path of Tantra and the vagal tone of neuroscience are the same physiological reality named differently.</p>
+    </div>
+    <div class="neural-card nc-acc">
+      <div class="neural-region">Anterior Cingulate Cortex</div>
+      <h4>Sustained Selective Attention</h4>
+      <p>The dissolution of word-boundaries in connected Sanskrit speech requires continuous phonological attention without rest-points. This trains the ACC — the same neural circuit activated in dhāraṇā meditation. Sanskrit recitation and dhyāna converge on the same substrate.</p>
+    </div>
+    <div class="neural-card nc-broca" style="border-top-color:var(--teal);">
+      <div class="neural-region" style="color:var(--teal-light)">Right Temporal Lobe</div>
+      <h4>Prosodic / Holistic Processing</h4>
+      <p>Sanskrit recitation with pitch-accent svaras activates the right hemisphere more than other Indian languages — specifically the right temporal lobe associated with prosodic processing, holistic pattern recognition, and transcendental experience (NIMHANS, Bangalore).</p>
+    </div>
+    <div class="neural-card nc-angular" style="border-top-color:var(--purple);">
+      <div class="neural-region" style="color:var(--purple-light)">Motor Cortex Speech Strip</div>
+      <h4>Fine Phonatory Differentiation</h4>
+      <p>The maximally differentiated Sanskrit phonemic system — 16 vowels, 25 classified consonants, retroflex-dental-palatal distinctions — continuously exercises the larynx-mouth motor strip. The same mechanism by which musicians maintain cognitive acuity into advanced age.</p>
+    </div>
+  </div>
+
+  <h3>Three Timescales of Cognitive Development</h3>
+
+  <div class="timescale-grid">
+    <div class="ts-block">
+      <span class="ts-label">Immediate · Per session</span>
+      <h4>Tri-System Activation</h4>
+      <p>Sandhi-parsing fires fronto-temporal networks; Samāsa resolution activates the angular gyrus; Mātrikā phonation stimulates the vagal-parasympathetic axis — all simultaneously within a single sūtra reading.</p>
+    </div>
+    <div class="ts-block">
+      <span class="ts-label">Medium-term · Weeks–Months</span>
+      <h4>Working Memory Expansion</h4>
+      <p>Regular Samāsa parsing expands working memory and cross-domain association via the angular gyrus. This explains why scholars trained in Sanskrit grammar naturally excelled in mathematics, logic, music, and strategic reasoning — all angular-gyrus-dependent functions.</p>
+    </div>
+    <div class="ts-block">
+      <span class="ts-label">Long-term · Years</span>
+      <h4>Neural Anti-Aging</h4>
+      <p>The precision of Mātrikā phonology combined with pitch-accent (svara) maintenance preserves neural plasticity in auditory and motor cortices through continuous fine-grained differentiation — the identical mechanism by which musicians maintain cognitive acuity into advanced age.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"><span>॥</span></div>
+
+<!-- ═══════════════════════════════════════════════
+     V. SŪTRA ANALYSIS
+══════════════════════════════════════════════════ -->
+<section class="section reveal" id="sutras">
+  <span class="section-tag">Section V</span>
+  <h2>Selected Sūtras — Full Multi-Level Analysis</h2>
+
+  <p>The following analyses demonstrate how each sūtra functions simultaneously as phonemic initiation, grammatical training apparatus, and philosophical proposition — the vehicle and the cargo forming a single continuous act of cognition.</p>
+
+  <div class="accordion">
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">अथातो ब्रह्मजिज्ञासा</span> — 1.1.1</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag">Bīja</span><span class="tag gold">Sandhi</span><span class="tag teal">Neural</span><span class="tag purple">Philosophical</span>
+        <p><strong>Bīja analysis:</strong> <span style="font-family:var(--font-dev)">अ</span> — the Ādibīja, root of all phonation, Brahman-as-sound before differentiation. <span style="font-family:var(--font-dev)">ब्र</span> — labial-varga Ākāśa + Agni-bīja र्, encoding the fire-space that transforms ignorance. <span style="font-family:var(--font-dev)">ज</span> — palatal Jñānaśakti bīja; its desiderative reduplication in जिज्ञासा phonemically enacts the longing it denotes.</p>
+        <p><strong>Sandhi:</strong> atha + ataḥ → athāto (vowel Sandhi: a+a → ā), brahma + jijñāsā (no Sandhi — the compound stands at a phonological breath-pause, signaling the weight of what follows). The sūtra is structured as a phonological arrival: the first word establishes temporal/modal context, the last word completes the philosophical program in a single Samāsa.</p>
+        <p><strong>Samāsa:</strong> brahma-jijñāsā is a Ṣaṣṭhī Tatpuruṣa: "the inquiry whose object is Brahman." The Samāsa compresses subject, epistemic action, and object into a single phonological unit — the entire program of the Uttara Mīmāṃsā contained in four syllables.</p>
+        <p><strong>Neural trigger:</strong> The sūtra is an initial condition — it sets the brain into a state of sustained inquiry. Neurolinguistically, the presence of a Tatpuruṣa compound with a desiderative noun (jijñāsā) activates both the anterior temporal lobe (semantic expectation) and the prefrontal cortex (goal-directed processing) simultaneously.</p>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">जन्माद्यस्य यतः</span> — 1.1.2</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag">Bīja</span><span class="tag gold">Sandhi</span><span class="tag teal">Neural</span>
+        <p><strong>Sandhi chain:</strong> janma + ādi → janmādya (vowel Sandhi: a+ā → ā). The Sandhi <em>binds</em> "birth" and "and so forth" into a single phonological concept-cluster before the possessive (asya) and causal (yataḥ) terms complete the proposition. The brain holds a growing conceptual complex across the entire string.</p>
+        <p><strong>Bīja resonance:</strong> <span style="font-family:var(--font-dev)">य</span> in यतः — the semivowel ya is counted among the antaḥstha phonemes in Pāṇinian grammar, positioned between vowels and consonants. In the Mātrikā, ya corresponds to the bīja of Vāyu-tattva and is specifically one of the high-vagal-stimulation phonemes. It is not coincidental that the sūtra's causative resolution-word carries maximal vagal resonance.</p>
+        <p><strong>Philosophical compression:</strong> Śaṅkara expands this six-syllable sūtra into pages of bhāṣya. The compression ratio — meaning-per-syllable — is extraordinarily high, training what psychologists call semantic density processing: the extraction of maximal information from minimal signal. This is the exact faculty exercised in mathematical reasoning, legal interpretation, and strategic decision-making.</p>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">शास्त्रयोनित्वात्</span> — 1.1.3</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag gold">Samāsa</span><span class="tag purple">Angular gyrus</span>
+        <p><strong>Samāsa structure:</strong> śāstra + yoni + tva + āt — a Ṣaṣṭhī Tatpuruṣa with the abstract suffix -tva creating a nominal property, then declined in the ablative. Four morphological layers processed as a single phonological token. The grammatical "unpeeling" required activates the same left-inferior-frontal parsing system used for embedded clause resolution in complex European sentences — but in Sanskrit, this is the norm, not the exception.</p>
+        <p><strong>Yoni as Śākta bīja:</strong> The word yoni (womb, source, matrix) in the Śrī Vidyā tradition is the primary symbol of the Mūla Prakṛti — the generative source of all manifestation. Its presence in this sūtra is not theologically neutral: Bādarāyaṇa names Brahman as the "yoni of śāstra," mapping the Vedic revelation onto the maternal-generative principle. This cross-mapping between grammatical structure and Tantric symbol is a characteristic feature of the deeper layers of the text.</p>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-header" onclick="toggleAcc(this)">
+        <span><span class="acc-dev">आनन्दमयोऽभ्यासात्</span> — 1.1.12</span>
+        <span class="acc-arrow">▶</span>
+      </button>
+      <div class="acc-body">
+        <span class="tag">Bahuvrīhi</span><span class="tag gold">Exocentric inference</span><span class="tag teal">Neural</span>
+        <p><strong>Bahuvrīhi analysis:</strong> ānanda-maya — the suffix -maya ("consisting of, full of") creates a Bahuvrīhi when the compound serves as an adjective qualifying an external referent (Brahman). The brain must: (1) parse the compound literally, (2) recognize the exocentric structure, (3) infer the external referent, (4) apply the compound as a predicate. Four inferential steps before the ablative argument (abhyāsāt) is even processed.</p>
+        <p><strong>Abhyāsa as phonemic enactment:</strong> The very word <span style="font-family:var(--font-dev)">अभ्यास</span> (repetition, practice) is constructed from ā+bhi+ās — a doubled approach toward the root. The word performs its own meaning structurally. The Brahmasūtra's "because of repetition in scripture" is itself an instance of what it proves — the repetition of the Vedic ānandamaya teaching validates Brahman's bliss-nature, just as the repetition in sādhana validates experiential knowledge.</p>
+        <p><strong>Neuroscience note:</strong> The angular gyrus activation during Bahuvrīhi processing has been specifically correlated with the N400 and P600 ERP components that neurolinguists use to measure semantic integration difficulty. Higher N400 amplitude = deeper semantic processing = more durable memory encoding. The Bahuvrīhi is therefore also a memory-enhancement device for the doctrine it conveys.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="section-divider"><span>॥</span></div>
+
+<!-- ═══════════════════════════════════════════════
+     VI. VĀK ASCENT
+══════════════════════════════════════════════════ -->
+<section class="section reveal" id="vak">
+  <span class="section-tag">Section VI</span>
+  <h2>The Brahmasūtra as Vāk-Ascent</h2>
+
+  <p>The four Adhyāyas of the Brahmasūtras can be mapped to the four stages of Vāk as delineated in the Trika system (Parā, Paśyantī, Madhyamā, Vaikharī) and corroborated by the neuroscience of language processing stages. This is not a post-hoc correspondence — it reflects Bādarāyaṇa's deliberate architectonics.</p>
+
+  <div class="vak-ladder">
+    <div class="vak-rung">
+      <div class="vak-dot">परा</div>
+      <div class="vak-content">
+        <h4>Adhyāya 1 · Samanvaya-pāda · Parā Vāk</h4>
+        <div class="vak-dev">समन्वय</div>
+        <p>The undifferentiated recognition that all Vedic statements converge on a single Brahman. Like Parā Vāk — the seed-state of all language before articulation — this adhyāya reveals unity prior to the differentiation of doctrines. Neural correlate: right-hemispheric gestalt integration, the holistic pre-verbal knowing before propositional breakdown.</p>
+      </div>
+    </div>
+    <div class="vak-rung">
+      <div class="vak-dot">पश्य</div>
+      <div class="vak-content">
+        <h4>Adhyāya 2 · Avirodha-pāda · Paśyantī Vāk</h4>
+        <div class="vak-dev">अविरोध</div>
+        <p>The "seeing" that resolves apparent contradictions between śāstra and rival darśanas (Sāṃkhya, Nyāya, Buddhism). Paśyantī is the "visionary" level — where the inner seer perceives the coherent structure behind apparent diversity. Neural correlate: left anterior temporal lobe, which processes semantic coherence and detects category violations.</p>
+      </div>
+    </div>
+    <div class="vak-rung">
+      <div class="vak-dot">मध्य</div>
+      <div class="vak-content">
+        <h4>Adhyāya 3 · Sādhana-pāda · Madhyamā Vāk</h4>
+        <div class="vak-dev">साधन</div>
+        <p>The mental elaboration of the upāsanā and jñāna-mārga — the intermediate formulation of practice. Madhyamā is the language of internal deliberation, the propositional thinking-in-words before speech. Neural correlate: Broca's area inner speech circuits, the prefrontal-temporal dialogue of planning and rehearsal.</p>
+      </div>
+    </div>
+    <div class="vak-rung">
+      <div class="vak-dot">वैख</div>
+      <div class="vak-content">
+        <h4>Adhyāya 4 · Phala-pāda · Vaikharī Vāk</h4>
+        <div class="vak-dev">फल</div>
+        <p>The spoken/manifest fruit — the articulated result of liberation, the krama-mukti and sadyo-mukti paths. Vaikharī is the fully embodied word reaching the listener's ear. Neural correlate: primary motor cortex (speech production), auditory cortex (self-monitoring), and the vagal system (breath-support of the liberated voice).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote-block" style="margin-top:2.5rem">
+    <span class="quote-dev">अनादिनिधनं ब्रह्म शब्दतत्त्वं यदक्षरम् ।<br>विवर्ततेऽर्थभावेन प्रक्रिया जगतो यतः ॥</span>
+    <span class="quote-roman">The imperishable Brahman is the tattva of Śabda, without beginning or end. From it, through the mode of meaning-manifestation, proceeds the creation of the world.</span>
+    <span class="quote-source">Bhartṛhari · Vākyapadīya 1.1 — The ultimate identity of language, consciousness, and cosmos</span>
+  </div>
+
+  <p>The Brahmasūtras, from this total view, are not merely a philosophical treatise. They are a <em>precisely engineered cognitive and spiritual training protocol</em>, in which the vehicle — Sanskrit language with its Sandhi, Samāsa, and Mātrikā-encoded phonology — is as transformative as the cargo, the doctrine of Brahman. The language studying Brahman and Brahman-as-language are, in the ultimate view, a single continuous self-reflexive process.</p>
+
+  <p>Engaging these sūtras with full phonological, grammatical, and doctrinal attention is therefore not the study of a text about reality — it is the deployment of a living technology for the restructuring of the mind that perceives reality.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════ -->
+<footer>
+  <span class="footer-om">ॐ</span>
+  <p>॥ श्रीमत्कृष्णद्वैपायनकृतब्रह्मसूत्रेषु · Bādārāyaṇa-Vyāsa ॥</p>
+  <p style="margin-top:0.5rem">Mātrikā · Sandhi · Samāsa · Neural Architecture · Vāk Ascent</p>
+</footer>
+
+<script>
+// Sticky nav
+const nav = document.getElementById('stickyNav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('visible', window.scrollY > 80);
+});
+
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin:'0px 0px -40px 0px' });
+reveals.forEach(el => observer.observe(el));
+
+// Accordion
+function toggleAcc(btn) {
+  const item = btn.closest('.acc-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.acc-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>
